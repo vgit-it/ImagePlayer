@@ -22,9 +22,15 @@
     driftPanPct: 0.8,     // ~0.8% pan, in units of the photo's own size
     backdropDrift: 0.06,  // the ambience creeps slightly faster, for depth
 
-    photoMax: 0.78,       // photo never exceeds this much of the screen
-    maxUpscale: 1.8,      // ...but a small scan is enlarged only this far,
-                          // past which it would just look soft
+    // Separate caps per axis. On a 16:9 screen the scarce axis is vertical for
+    // a portrait photo and horizontal for a panorama, so a single shared cap
+    // serves neither: it sizes every portrait as though it also had to fit a
+    // width it was never going to trouble.
+    photoMaxW: 0.78,
+    photoMaxH: 0.88,      // 0.88 x the 1.04 drift peak = 91.5% of the screen,
+                          // which leaves the shadow and vignette room to breathe
+    maxUpscale: 1.8,      // a small scan is enlarged only this far, past which
+                          // it would just look soft
 
     preloadAhead: 2,      // photos decoded in advance, so a big file never
                           // stutters mid-fade
@@ -50,7 +56,8 @@
   var root = document.documentElement;
   root.style.setProperty('--photo-fade', CONFIG.photoFadeMs + 'ms');
   root.style.setProperty('--backdrop-fade', CONFIG.backdropFadeMs + 'ms');
-  root.style.setProperty('--photo-max', (CONFIG.photoMax * 100) + '%');
+  root.style.setProperty('--photo-max-w', (CONFIG.photoMaxW * 100) + '%');
+  root.style.setProperty('--photo-max-h', (CONFIG.photoMaxH * 100) + '%');
 
   var reduceMotion = window.matchMedia &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -130,9 +137,13 @@
    *
    * `max-width` alone would leave a small photo — an old scan, a phone
    * screenshot — sitting as a little island while everything around it
-   * fills 78% of the screen. That inconsistency breaks the rhythm more
-   * than softness does, so small images are enlarged to match. Only up to
-   * a point: past ~1.8x they stop looking like photographs.
+   * fills the frame. That inconsistency breaks the rhythm more than
+   * softness does, so small images are enlarged to match. Only up to a
+   * point: past ~1.8x they stop looking like photographs.
+   *
+   * This is what governs size, not the CSS `max-*` rules — those are only a
+   * backstop for the frame before this runs. Widening the caps here without
+   * widening them there would silently do nothing.
    * ------------------------------------------------------------------ */
   function fit(imgEl, loaded) {
     // Prefer the preloaded image's dimensions: naturalWidth on the on-screen
@@ -142,10 +153,9 @@
     var nh = (loaded && loaded.naturalHeight) || imgEl.naturalHeight;
     if (!nw || !nh) return;
 
-    var box = CONFIG.photoMax;
     var toFit = Math.min(
-      window.innerWidth * box / nw,
-      window.innerHeight * box / nh
+      window.innerWidth * CONFIG.photoMaxW / nw,
+      window.innerHeight * CONFIG.photoMaxH / nh
     );
     // Shrink as far as needed; enlarge only within the upscale cap.
     var scale = Math.min(toFit, CONFIG.maxUpscale);

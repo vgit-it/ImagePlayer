@@ -13,7 +13,12 @@
      punching a hole in the wall. */
   --base: #0d0b0a;
 
-  --photo-max: 78%;        /* photo never exceeds this much of the screen */
+  /* Caps per axis — vertical is the scarce one for portraits on a 16:9 screen.
+     These are only a backstop; assets/player.js sizes each photo explicitly and
+     overwrites both values from its CONFIG on load. */
+  --photo-max-w: 78%;
+  --photo-max-h: 88%;
+
   --photo-fade: 1500ms;    /* cross-dissolve between photos */
   --backdrop-fade: 2500ms; /* slower, so the room's colour lags a beat behind */
 
@@ -80,8 +85,8 @@ body.show-cursor { cursor: default; }
 .photo-layer.visible { opacity: 1; }
 
 .photo {
-  max-width: var(--photo-max);
-  max-height: var(--photo-max);
+  max-width: var(--photo-max-w);
+  max-height: var(--photo-max-h);
   object-fit: contain;
   display: block;
   border-radius: 2px;

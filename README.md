@@ -15,12 +15,16 @@ regenerate the playlist when you add photos.
 That's the whole workflow. While `photos/` is empty the player falls back to
 the placeholder images in `samples/`, so it runs the moment you clone it.
 
+**Adding photos through github.com instead?** Just upload them — you can skip
+step 2. A GitHub Action watches `photos/` and regenerates the playlist for you,
+because there is no shell to run node in when you drag files onto the web UI.
+
 ## The design — "Ambient Frame"
 
 The screen is never "a photo on a background." It is one softly-lit surface
 whose colour comes from the photo currently showing. The photo sits whole and
-uncropped in the middle at 78% of the screen; behind it, the same image blown
-up, heavily blurred and dimmed, fills everything else.
+uncropped in the middle; behind it, the same image blown up, heavily blurred and
+dimmed, fills everything else.
 
 That single move is what makes mixed aspect ratios work. A tall portrait photo
 doesn't sit in two black bars — it sits in a haze of its own colours, and the
@@ -32,6 +36,11 @@ photo, smile, and look away.
 
 - **Nothing on screen but the photo.** No captions, counters, dots, progress
   bar, filenames or controls.
+- **Sized per axis — 88% of screen height, 78% of width.** On a 16:9 screen the
+  scarce axis is vertical for a portrait photo and horizontal for a panorama, so
+  a single shared cap serves neither. Small images are enlarged to match rather
+  than sitting as little islands, but only up to 1.8x, past which they stop
+  looking like photographs.
 - **Warm off-black base** (`#0d0b0a`), not `#000` — pure black makes a bright
   photo look like it's punching a hole in the wall.
 - **10s hold, ~4% drift.** You should not be able to *see* it moving, only
@@ -88,6 +97,7 @@ samples/                   placeholder images in assorted aspect ratios
 photos.js                  generated playlist — do not edit by hand
 tools/build-manifest.mjs   rescans photos/ and rewrites photos.js
 tools/make-samples.mjs     regenerates samples/
+.github/workflows/         rebuilds photos.js when photos/ changes on a push
 ```
 
 ### A note on large photos
